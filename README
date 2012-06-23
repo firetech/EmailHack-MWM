@@ -1,0 +1,30 @@
+MetaWatch EmailHack
+===================
+
+About
+-----
+MetaWatch EmailHack is primarily a hack. Secondarily, it's a plugin for benjymous' MetaWatch Manager fork (https://github.com/benjymous/MWM-for-Android).
+
+It provides a widget and SIMPLE notifications for the stock Android Email app (com.android.email). However, it uses root access to get unread counts directly from the database, and thus will not work without a rooted ROM on your Android device (that's why it's a hack).
+
+EmailHack will ONLY use the root access for reading the unread count from the database of the Email app. This can be verified by the user by looking at the root command it attempts to run. 
+
+
+Requirements
+------------
+* An Android device.
+* A rooted ROM.
+* A recent "rm" version of MetaWatch Manager
+  (see https://github.com/benjymous/MWM-for-Android).
+  For full support, rm16 or newer is needed, but rm14 or later will work.
+
+
+Disclaimer
+----------
+NO support is given for MetaWatch EmailHack. Any use is entirely at your own risk.
+
+I have only tested MetaWatch EmailHack on my Galaxy Nexus GSM running nightly builds of CyanogenMod 9 (http://www.cyanogenmod.com).
+
+There is no guarantee that it will work properly on your phone, especially not if your phone runs a ROM other than CM9. However, EmailHack SHOULD be supported on Android versions as old as 2.1, IF and only if the database of the Email app is compatible, which I do not know.
+
+// Joakim "firetech" Andersson, June 23, 2012 
