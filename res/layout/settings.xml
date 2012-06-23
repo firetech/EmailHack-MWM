@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen
+	xmlns:android="http://schemas.android.com/apk/res/android"
+	>
+		
+	<CheckBoxPreference
+		android:title="Notifications"
+		android:key="notify"
+		android:summary="New E-mail notification (Make sure the Email app is excluded from &quot;Other apps&quot; in MWM)"
+		android:defaultValue="true"
+		/>
+	<ListPreference 
+		android:entries="@array/settings_number_buzzes_names" 
+		android:entryValues="@array/settings_number_buzzes_values" 
+		android:dialogTitle="Number of Buzzes" 
+		android:key="notifyBuzzes" 
+		android:title="Vibrate Pattern" 
+		android:negativeButtonText="Cancel"
+		android:defaultValue="3"
+		android:dependency="notify"
+		/>
+	
+	<EditTextPreference
+		android:title="Service Check Interval"
+		android:key="alarmInterval"
+		android:summary="How often to check that the service is running (in minutes, set to 0 to disable), this is the worst-case highest interval between updating the unread count"
+		android:inputType="number"
+		android:defaultValue="15"
+		/>
+
+</PreferenceScreen>
+
+
+
