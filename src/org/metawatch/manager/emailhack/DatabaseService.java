@@ -47,7 +47,9 @@ public class DatabaseService extends Service {
 	public static boolean isCacheOld(Context context) {
 		synchronized(mutex) {
 			SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
-			return (System.currentTimeMillis() - prefs.getLong("cacheTimestamp", 0) > 900000); //15 minutes
+			long timestamp = prefs.getLong("cacheTimestamp", 0);
+			int interval = Integer.parseInt(prefs.getString("alarmInterval", "15")) * 60000;
+			return (System.currentTimeMillis() - timestamp >= interval);
 		}
 	}
 	public static void refreshUnreadCount(Context context, boolean forceWidgetUpdate) {
