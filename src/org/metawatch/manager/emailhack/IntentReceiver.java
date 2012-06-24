@@ -37,7 +37,7 @@ public class IntentReceiver extends BroadcastReceiver  {
 				shown_widgets = Arrays.asList(bundle.getStringArray("org.metawatch.manager.widgets_desired"));
 			}
 
-			ManagerApi.updateWidget(context, getPreviews);
+			ManagerApi.updateWidget(context, getPreviews, false);
 		}
 		
 	}

@@ -78,7 +78,7 @@ public class DatabaseService extends Service {
 			
 			if (forceWidgetUpdate || oldCount != newCount) {
 				if (Main.log) Log.d(Main.TAG, "Updating widget...");
-				ManagerApi.updateWidget(context, false);
+				ManagerApi.updateWidget(context, false, true);
 			}
 		}
 	}

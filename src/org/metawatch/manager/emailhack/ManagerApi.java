@@ -33,9 +33,9 @@ public class ManagerApi {
 
 	private static Typeface typefaceCaps = null;
 	private static Typeface typefaceNumerals = null;
-	
-	static void updateWidget(Context context, boolean generateAll) {
-		if (DatabaseService.isCacheOld(context)) {
+
+	static void updateWidget(Context context, boolean generateAll, boolean ignoreCacheAge) {
+		if (!ignoreCacheAge && DatabaseService.isCacheOld(context)) {
 			if (!DatabaseService.isRunning()) context.startService(new Intent(context, DatabaseService.class));
 			DatabaseService.refreshUnreadCount(context, true);
 			// Will trigger an update() by itself.
