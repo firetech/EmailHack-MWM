@@ -106,7 +106,6 @@ public class ManagerApi {
 
 	public static void sendNotification(Context context, int count) {
 		SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
-		String mailbox = prefs.getString("mailbox", null);
 		int buzzes = Integer.parseInt(prefs.getString("notifyBuzzes", "3"));
 		
 		Bitmap icon = loadBitmapFromAssets(context, "email.bmp");
@@ -116,7 +115,7 @@ public class ManagerApi {
 		Intent broadcast = new Intent("org.metawatch.manager.NOTIFICATION");
 		Bundle b = new Bundle();
 		b.putString("title", "Email");
-		b.putString("text", count + " new " + (count > 1 ? "messages" : "message") + " in " + mailbox);
+		b.putString("text", count + " new " + (count > 1 ? "messages" : "message"));
 		b.putIntArray("icon", pixelArray);
 		b.putInt("iconWidth", icon.getWidth());
 		b.putInt("iconHeight", icon.getHeight());
