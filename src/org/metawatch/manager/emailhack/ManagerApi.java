@@ -39,10 +39,10 @@ public class ManagerApi {
 			if (!DatabaseService.isRunning()) context.startService(new Intent(context, DatabaseService.class));
 			DatabaseService.refreshUnreadCount(context, true);
 			// Will trigger an update() by itself.
-			
+
 		} else {
 			int count = DatabaseService.getUnreadCount(context);
-			
+
 			for (int i = 0; i < IDS.length; i++) {
 				boolean active = (generateAll || IntentReceiver.shown_widgets == null || IntentReceiver.shown_widgets.contains(IDS[i]));
 				if (active) {
@@ -54,22 +54,22 @@ public class ManagerApi {
 
 	private synchronized static void genWidget(Context context, int index, int count) {
 		if (Main.log) Log.d(Main.TAG, "genWidget() start - "+IDS[index]);
-		
+
 		if (typefaceCaps==null) {
 			typefaceCaps = Typeface.createFromAsset(context.getAssets(), "metawatch_8pt_5pxl_CAPS.ttf");
 		}
 		if (typefaceNumerals==null) {
 			typefaceNumerals = Typeface.createFromAsset(context.getAssets(), "metawatch_8pt_5pxl_Numerals.ttf");
 		}
-		
+
 		TextPaint textPaint = new TextPaint();
 		textPaint.setColor(Color.BLACK);
 		textPaint.setTextSize(8);
 		textPaint.setTextAlign(Align.CENTER);
-		
+
 		int width = SIZES[index][0];
 		int height = SIZES[index][1];
-		
+
 		String text;
 		Typeface smallTypeface = typefaceNumerals;
 		// Stop the text being too wide for the widget
@@ -83,11 +83,11 @@ public class ManagerApi {
 				text = Integer.toString(count);
 			}
 		}
-		
+
 		Bitmap bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.RGB_565);
 		Canvas canvas = new Canvas(bitmap);
 		canvas.drawColor(Color.WHITE);
-		
+
 		if(height==16) {
 			textPaint.setTypeface(smallTypeface);
 			canvas.drawBitmap(loadBitmapFromAssets(context, "idle_mail_10.bmp"), 2, 0, null);
@@ -97,21 +97,21 @@ public class ManagerApi {
 			canvas.drawBitmap(loadBitmapFromAssets(context, "idle_mail.bmp"), 0, 3, null);
 			canvas.drawText(text, 12, 30, textPaint);
 		}
-		 	
+
 		Intent i = createUpdateIntent(bitmap, IDS[index], DESCS[index], 1);
 		context.sendBroadcast(i);
-	
+
 		if (Main.log) Log.d(Main.TAG, "genWidget() end");
 	}
 
 	public static void sendNotification(Context context, int count) {
 		SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
 		int buzzes = Integer.parseInt(prefs.getString("notifyBuzzes", "3"));
-		
+
 		Bitmap icon = loadBitmapFromAssets(context, "email.bmp");
 		int pixelArray[] = new int[icon.getWidth() * icon.getHeight()];
 		icon.getPixels(pixelArray, 0, icon.getWidth(), 0, 0, icon.getWidth(), icon.getHeight());
-		
+
 		Intent broadcast = new Intent("org.metawatch.manager.NOTIFICATION");
 		Bundle b = new Bundle();
 		b.putString("title", "Email");
@@ -120,15 +120,15 @@ public class ManagerApi {
 		b.putInt("iconWidth", icon.getWidth());
 		b.putInt("iconHeight", icon.getHeight());
 		b.putBoolean("sticky", false);
-	
+
 		if (buzzes > 0) {
-	    	b.putInt("vibrate_on", 500);
-	    	b.putInt("vibrate_off", 500);
-	    	b.putInt("vibrate_cycles", buzzes);
+			b.putInt("vibrate_on", 500);
+			b.putInt("vibrate_off", 500);
+			b.putInt("vibrate_cycles", buzzes);
 		}
-	
+
 		broadcast.putExtras(b);
-	
+
 		if (Main.log) Log.d(Main.TAG, "Sending notification");
 		context.sendBroadcast(broadcast);
 	}
@@ -147,7 +147,7 @@ public class ManagerApi {
 	private static Intent createUpdateIntent(Bitmap bitmap, String id, String description, int priority) {
 		int pixelArray[] = new int[bitmap.getWidth() * bitmap.getHeight()];
 		bitmap.getPixels(pixelArray, 0, bitmap.getWidth(), 0, 0, bitmap.getWidth(), bitmap.getHeight());
-	
+
 		Intent intent = new Intent("org.metawatch.manager.WIDGET_UPDATE");
 		Bundle b = new Bundle();
 		b.putString("id", id);
@@ -157,16 +157,16 @@ public class ManagerApi {
 		b.putInt("priority", priority);
 		b.putIntArray("array", pixelArray);
 		intent.putExtras(b);
-	
+
 		return intent;
 	}
 
 	private static Bitmap loadBitmapFromAssets(Context context, String path) {
 		try {
 			InputStream inputStream = context.getAssets().open(path);
-	        Bitmap bitmap = BitmapFactory.decodeStream(inputStream);
-	        inputStream.close();
-	        return bitmap;
+			Bitmap bitmap = BitmapFactory.decodeStream(inputStream);
+			inputStream.close();
+			return bitmap;
 		} catch (IOException e) {
 			return null;
 		}
