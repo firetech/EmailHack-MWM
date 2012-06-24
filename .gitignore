@@ -9,3 +9,5 @@ gen/*
 ##############
 .DS_Store
 *.swp
+
+*.apk

@@ -4,6 +4,7 @@ import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
+import java.util.Arrays;
 
 import android.app.AlarmManager;
 import android.app.PendingIntent;
@@ -53,27 +54,29 @@ public class DatabaseService extends Service {
 		synchronized(mutex) {
 			String[] output = dbExec(GET_UNREAD_CMD);
 			
+			int newCount = -1;
 			try {
-				int newCount = Integer.parseInt(output[0]);
-				if (Main.LOG) Log.d(Main.TAG, "Unread count: " + newCount);
-	
-				SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
-				int oldCount = prefs.getInt("unreadCount", -1);
-				if (oldCount >= 0 && newCount > oldCount) {
-					if (prefs.getBoolean("notify", true))
-					ManagerApi.sendNotification(context, newCount);
-				}
-				SharedPreferences.Editor editor = prefs.edit();
-				editor.putInt("unreadCount", newCount);
-				editor.putLong("cacheTimestamp", System.currentTimeMillis());
-				editor.commit();
-				
-				if (forceWidgetUpdate || oldCount != newCount) {
-					if (Main.LOG) Log.d(Main.TAG, "Updating widget...");
-					ManagerApi.updateWidget(context, false);
-				}
+				newCount = Integer.parseInt(output[0]);
 			} catch (Exception ex) {
-				if (Main.LOG) Log.e(Main.TAG, "Exception while parsing unread count", ex);
+				if (Main.log) Log.e(Main.TAG, "Exception while parsing unread count, output was: " + Arrays.toString(output), ex);
+			}
+			
+			if (Main.log) Log.d(Main.TAG, "Unread count: " + newCount);
+			
+			SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
+			int oldCount = prefs.getInt("unreadCount", -1);
+			if (oldCount >= 0 && newCount > oldCount) {
+				if (prefs.getBoolean("notify", true))
+				ManagerApi.sendNotification(context, newCount);
+			}
+			SharedPreferences.Editor editor = prefs.edit();
+			editor.putInt("unreadCount", newCount);
+			if (newCount != -1) editor.putLong("cacheTimestamp", System.currentTimeMillis());
+			editor.commit();
+			
+			if (forceWidgetUpdate || oldCount != newCount) {
+				if (Main.log) Log.d(Main.TAG, "Updating widget...");
+				ManagerApi.updateWidget(context, false);
 			}
 		}
 	}
@@ -83,7 +86,7 @@ public class DatabaseService extends Service {
 		AlarmManager am = (AlarmManager)context.getSystemService(ALARM_SERVICE);
 		PendingIntent pi = PendingIntent.getService(context, 0, new Intent(context, DatabaseService.class), 0);
 		
-		if (Main.LOG) Log.d(Main.TAG, "Removing any existing alarm...");
+		if (Main.log) Log.d(Main.TAG, "Removing any existing alarm...");
 		am.cancel(pi);
 		
 		int interval = Integer.parseInt(
@@ -91,7 +94,7 @@ public class DatabaseService extends Service {
 						prefs.getString("alarmInterval", "15") :
 						intervalString)) * 60000;
 		if (interval > 0) {
-			if (Main.LOG) Log.d(Main.TAG, "Setting alarm (interval " + interval + ")...");
+			if (Main.log) Log.d(Main.TAG, "Setting alarm (interval " + interval + ")...");
 			am.setInexactRepeating(AlarmManager.RTC_WAKEUP, System.currentTimeMillis() + interval, interval, pi);
 		}
 	}
@@ -99,14 +102,14 @@ public class DatabaseService extends Service {
 	@Override
 	public void onCreate() {
 		if (!initialized) {
-			if (Main.LOG) Log.d(Main.TAG, "Registering observer...");
+			if (Main.log) Log.d(Main.TAG, "Registering observer...");
 			getContentResolver().registerContentObserver(Uri.parse(CONTENT_URI), false, new DbContentObserver());
 			
 			setAlarm(this, null);
 			
 			initialized = true;
 		} else {
-			if (Main.LOG) Log.d(Main.TAG, "Already initialized.");
+			if (Main.log) Log.d(Main.TAG, "Already initialized.");
 		}
 	}
 	
@@ -136,25 +139,42 @@ public class DatabaseService extends Service {
 	///////////////////////////////////////////////////////////////////////////
 	
 	private static synchronized String[] dbExec(String sql) {
-		if (Main.LOG) Log.d(Main.TAG, "Executing SQL: " + sql);
+		if (Main.log) Log.d(Main.TAG, "Executing SQL: " + sql);
 		ArrayList<String> output = new ArrayList<String>();
+		Process p = null;
 		try {
-			Process p = Runtime.getRuntime().exec(new String[] {
+			p = Runtime.getRuntime().exec(new String[] {
 				"su",
 				"-c", 
 				"sqlite3 " + DB_PATH + " \"" + sql + "\""
 			});
-			InputStream stdout = p.getInputStream();
-			BufferedReader reader = new BufferedReader (new InputStreamReader(stdout));
-			p.waitFor();
 			
-			String s;
-			while ((s = reader.readLine()) != null) {
-				output.add(s);
+			int exitValue = p.waitFor();
+			if (exitValue == 0) {
+				InputStream stdout = p.getInputStream();
+				BufferedReader reader = new BufferedReader(new InputStreamReader(stdout));
+				String s;
+				while ((s = reader.readLine()) != null) {
+					output.add(s);
+				}
+				reader.close();
+			} else {
+				throw new Exception("Non-zero exit status " + exitValue);
 			}
-			reader.close();
 		} catch (Exception ex) {
-			if (Main.LOG) Log.e(Main.TAG, "Exception while reading database", ex);
+			if (Main.log) {
+				Log.e(Main.TAG, "Exception while reading database", ex);
+				try {
+					String s;
+					InputStream stderr = p.getErrorStream();
+					BufferedReader reader = new BufferedReader(new InputStreamReader(stderr));
+					while ((s = reader.readLine()) != null) {
+						Log.e(Main.TAG, "STDERR: " + s);
+					}
+				} catch (Exception ex2) {
+					Log.e(Main.TAG, "Exception while reading STDERR", ex2);
+				}
+			}
 		}
 		
 		return output.toArray(new String[0]);
@@ -168,15 +188,15 @@ public class DatabaseService extends Service {
 		}
 
 		public void run() {
-			if (Main.LOG) Log.d(Main.TAG, "Waiting...");
+			if (Main.log) Log.d(Main.TAG, "Waiting...");
 			try {
 				Thread.sleep(2000);
 			} catch (InterruptedException e) {
-				if (Main.LOG) Log.d(Main.TAG, "Stopped!");
+				if (Main.log) Log.d(Main.TAG, "Stopped!");
 				return;
 			}
 
-			if (Main.LOG) Log.d(Main.TAG, "Refreshing count...");
+			if (Main.log) Log.d(Main.TAG, "Refreshing count...");
 			DatabaseService.refreshUnreadCount(DatabaseService.this, false);
 			
 			timeoutThread = null;
@@ -186,7 +206,7 @@ public class DatabaseService extends Service {
 		public void onChange(boolean selfChange) {
 			super.onChange(selfChange);
 			
-			if (Main.LOG) Log.d(Main.TAG, "Content changed!");
+			if (Main.log) Log.d(Main.TAG, "Content changed!");
 			if (timeoutThread != null && timeoutThread.isAlive()) {
 				timeoutThread.interrupt();
 			}

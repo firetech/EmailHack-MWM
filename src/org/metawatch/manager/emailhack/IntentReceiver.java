@@ -16,7 +16,7 @@ public class IntentReceiver extends BroadcastReceiver  {
 	@Override
 	public void onReceive(Context context, Intent intent) {
 		String action = intent.getAction();
-		if (Main.LOG) Log.d(Main.TAG, "onReceive() " + action);
+		if (Main.log) Log.d(Main.TAG, "onReceive() " + action);
 		
 		if (action == null) {
 			return;
@@ -30,10 +30,10 @@ public class IntentReceiver extends BroadcastReceiver  {
 
 			boolean getPreviews = bundle.containsKey("org.metawatch.manager.get_previews");
 			if (getPreviews)
-				if (Main.LOG) Log.d(Main.TAG, "get_previews");
+				if (Main.log) Log.d(Main.TAG, "get_previews");
 
 			if (bundle.containsKey("org.metawatch.manager.widgets_desired")) {
-				if (Main.LOG) Log.d(Main.TAG, "widgets_desired");
+				if (Main.log) Log.d(Main.TAG, "widgets_desired");
 				shown_widgets = Arrays.asList(bundle.getStringArray("org.metawatch.manager.widgets_desired"));
 			}
 

@@ -28,6 +28,12 @@
 		android:defaultValue="15"
 		/>
 
+	<CheckBoxPreference
+		android:title="Debug Logging"
+		android:key="log"
+		android:summary="Log events to the debug log - Disable to improve performance (keep enabled to be able to track down problems)"
+		android:defaultValue="true"
+		/>
 </PreferenceScreen>
 
 

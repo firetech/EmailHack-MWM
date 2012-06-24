@@ -53,7 +53,7 @@ public class ManagerApi {
 	}
 
 	private synchronized static void genWidget(Context context, int index, int count) {
-		if (Main.LOG) Log.d(Main.TAG, "genWidget() start - "+IDS[index]);
+		if (Main.log) Log.d(Main.TAG, "genWidget() start - "+IDS[index]);
 		
 		if (typefaceCaps==null) {
 			typefaceCaps = Typeface.createFromAsset(context.getAssets(), "metawatch_8pt_5pxl_CAPS.ttf");
@@ -71,14 +71,17 @@ public class ManagerApi {
 		int height = SIZES[index][1];
 		
 		String text;
+		Typeface smallTypeface = typefaceNumerals;
 		// Stop the text being too wide for the widget
-		if (height==16 && count>1999)
+		if (height==16 && count>1999) {
 			text="999+";
-		else {
-			if (count<0)
-				text = "-";
-			else
+		} else {
+			if (count<0) {
+				text = "err";
+				smallTypeface = typefaceCaps;
+			} else {
 				text = Integer.toString(count);
+			}
 		}
 		
 		Bitmap bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.RGB_565);
@@ -86,7 +89,7 @@ public class ManagerApi {
 		canvas.drawColor(Color.WHITE);
 		
 		if(height==16) {
-			textPaint.setTypeface(typefaceNumerals);
+			textPaint.setTypeface(smallTypeface);
 			canvas.drawBitmap(loadBitmapFromAssets(context, "idle_mail_10.bmp"), 2, 0, null);
 			canvas.drawText(text, 8, 15, textPaint);
 		}  else {
@@ -98,7 +101,7 @@ public class ManagerApi {
 		Intent i = createUpdateIntent(bitmap, IDS[index], DESCS[index], 1);
 		context.sendBroadcast(i);
 	
-		if (Main.LOG) Log.d(Main.TAG, "genWidget() end");
+		if (Main.log) Log.d(Main.TAG, "genWidget() end");
 	}
 
 	public static void sendNotification(Context context, int count) {
@@ -127,7 +130,7 @@ public class ManagerApi {
 	
 		broadcast.putExtras(b);
 	
-		if (Main.LOG) Log.d(Main.TAG, "Sending notification");
+		if (Main.log) Log.d(Main.TAG, "Sending notification");
 		context.sendBroadcast(broadcast);
 	}
 
